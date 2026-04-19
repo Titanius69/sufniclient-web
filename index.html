@@ -26,9 +26,19 @@
             text-align: center;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
-        h1 { margin-top: 0; color: #ffaa44; }
-        .input-group { margin: 15px 0; text-align: left; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        h1 {
+            margin-top: 0;
+            color: #ffaa44;
+        }
+        .input-group {
+            margin: 15px 0;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
         input {
             width: 100%;
             padding: 8px;
@@ -48,7 +58,10 @@
             margin-top: 20px;
             transition: 0.2s;
         }
-        button:hover { background: #ffcc66; transform: scale(1.02); }
+        button:hover {
+            background: #ffcc66;
+            transform: scale(1.02);
+        }
         .progress-container {
             margin-top: 20px;
             background: #333;
@@ -61,10 +74,10 @@
             background: #ffaa44;
             transition: width 0.3s;
         }
-        .log-area {
+        .log-box {
             margin-top: 20px;
-            background: #222;
-            border-radius: 8px;
+            background: #1e1e2f;
+            border-radius: 10px;
             padding: 10px;
             height: 200px;
             overflow-y: auto;
@@ -72,8 +85,19 @@
             font-family: monospace;
             font-size: 12px;
         }
-        .log-line { margin: 2px 0; color: #0f0; }
-        .log-error { color: #f66; }
+        .log-line {
+            margin: 2px 0;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .log-error {
+            color: #ff6666;
+        }
+        .status {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #aaa;
+        }
     </style>
 </head>
 <body>
@@ -91,47 +115,81 @@
         <div class="progress-container">
             <div class="progress-bar" id="progressBar"></div>
         </div>
-        <div id="taskLabel" style="margin-top: 5px; font-size: 12px;"></div>
-        <div class="log-area" id="logArea"></div>
+        <div class="log-box" id="logBox">
+            <div class="log-line">Készen áll.</div>
+        </div>
+        <div class="status" id="statusText"></div>
     </div>
     <script>
         const launchBtn = document.getElementById('launchBtn');
         const usernameInput = document.getElementById('username');
         const memoryInput = document.getElementById('memory');
         const progressBar = document.getElementById('progressBar');
-        const taskLabel = document.getElementById('taskLabel');
-        const logArea = document.getElementById('logArea');
+        const logBox = document.getElementById('logBox');
+        const statusDiv = document.getElementById('statusText');
+
+        function addLog(message, isError = false) {
+            const line = document.createElement('div');
+            line.className = 'log-line' + (isError ? ' log-error' : '');
+            line.textContent = message;
+            logBox.appendChild(line);
+            line.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function setProgress(percent) {
+            progressBar.style.width = percent + '%';
+            statusDiv.textContent = `Folyamat: ${percent}%`;
+        }
+
+        window.chrome.webview.addEventListener('message', (event) => {
+            const data = event.data;
+            if (typeof data === 'string') {
+                try {
+                    const parsed = JSON.parse(data);
+                    if (parsed.type === 'output') {
+                        const line = parsed.line;
+                        if (line.startsWith('PROGRESS:')) {
+                            const parts = line.split(':');
+                            if (parts.length >= 2) {
+                                const percent = parseInt(parts[1]);
+                                if (!isNaN(percent)) setProgress(percent);
+                            }
+                        } else if (line.startsWith('LOG:')) {
+                            addLog(line.substring(4));
+                        } else {
+                            addLog(line);
+                        }
+                    } else if (parsed.type === 'error') {
+                        addLog(parsed.line, true);
+                    } else if (parsed.type === 'log') {
+                        addLog(parsed.message);
+                    }
+                } catch(e) {
+                    addLog(data, false);
+                }
+            }
+        });
 
         launchBtn.addEventListener('click', () => {
             const username = usernameInput.value.trim();
             const memory = memoryInput.value.trim();
-            if (!username) { addLog('Kérlek add meg a felhasználónevet!', true); return; }
-            if (!memory || !/^\d+[Gg]$/.test(memory)) { addLog('A memória formátuma: pl. 2G, 4G', true); return; }
-            addLog('Indítás kérése elküldve...');
-            window.chrome.webview.postMessage(JSON.stringify({ username, memory }));
-        });
-
-        function addLog(msg, isError = false) {
-            const div = document.createElement('div');
-            div.className = isError ? 'log-line log-error' : 'log-line';
-            div.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
-            logArea.appendChild(div);
-            logArea.scrollTop = logArea.scrollHeight;
-        }
-
-        function setProgress(percent, task) {
-            progressBar.style.width = percent + '%';
-            taskLabel.textContent = task;
-            if (percent === 100) setTimeout(() => { taskLabel.textContent = ''; }, 1000);
-        }
-
-        window.receiveMessage = (data) => {
-            if (data.type === 'log') {
-                addLog(data.content);
-            } else if (data.type === 'progress') {
-                setProgress(data.percent, data.task);
+            if (!username) {
+                addLog('Kérlek add meg a felhasználónevet!', true);
+                return;
             }
-        };
+            if (!memory || !/^\d+[Gg]$/.test(memory)) {
+                addLog('A memória formátuma: pl. 2G, 4G', true);
+                return;
+            }
+            addLog('Indítás kérése elküldve...');
+            setProgress(0);
+            const message = {
+                command: 'start',
+                username: username,
+                memory: memory.toUpperCase()
+            };
+            window.chrome.webview.postMessage(JSON.stringify(message));
+        });
     </script>
 </body>
 </html>
