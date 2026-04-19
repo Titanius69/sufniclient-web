@@ -22,7 +22,7 @@
             border-radius: 20px;
             padding: 30px;
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
             text-align: center;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
@@ -62,8 +62,37 @@
             background: #ffcc66;
             transform: scale(1.02);
         }
-        .status {
+        .progress-container {
             margin-top: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 20px;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #ffaa44;
+            transition: width 0.3s;
+        }
+        .log-box {
+            margin-top: 20px;
+            background: #222;
+            border-radius: 10px;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-line {
+            margin: 2px 0;
+            color: #ccc;
+            word-wrap: break-word;
+        }
+        .status {
+            margin-top: 10px;
             font-size: 14px;
             color: #aaa;
         }
@@ -81,6 +110,10 @@
             <input type="text" id="memory" value="2G">
         </div>
         <button id="launchBtn">🚀 Játék indítása</button>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="log-box" id="logBox"></div>
         <div class="status" id="statusText">Készen áll</div>
     </div>
     <script>
@@ -88,26 +121,62 @@
         const usernameInput = document.getElementById('username');
         const memoryInput = document.getElementById('memory');
         const statusDiv = document.getElementById('statusText');
+        const progressBar = document.getElementById('progressBar');
+        const logBox = document.getElementById('logBox');
+
+        function addLog(message) {
+            const line = document.createElement('div');
+            line.className = 'log-line';
+            line.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+            logBox.appendChild(line);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function setProgress(percent, task) {
+            progressBar.style.width = percent + '%';
+            statusDiv.innerText = task + ' - ' + percent + '%';
+        }
+
+        // Üzenet fogadása a C# alkalmazástól
+        window.chrome.webview.addEventListener('message', (event) => {
+            const data = event.data;
+            if (typeof data === 'string') {
+                if (data.startsWith('PROGRESS:')) {
+                    const parts = data.split(':');
+                    if (parts.length >= 4) {
+                        const percent = parseInt(parts[1], 10);
+                        const task = parts[3];
+                        setProgress(percent, task);
+                    }
+                } else if (data.startsWith('LOG:')) {
+                    addLog(data.substring(4));
+                } else {
+                    addLog(data);
+                }
+            }
+        });
 
         launchBtn.addEventListener('click', () => {
             const username = usernameInput.value.trim();
             const memory = memoryInput.value.trim();
             if (!username) {
-                statusDiv.innerText = 'Kérlek add meg a felhasználónevet!';
+                addLog('Kérlek add meg a felhasználónevet!');
                 return;
             }
             if (!memory || !/^\d+[Gg]$/.test(memory)) {
-                statusDiv.innerText = 'A memória formátuma: pl. 2G, 4G';
+                addLog('A memória formátuma: pl. 2G, 4G');
                 return;
             }
-            statusDiv.innerText = 'Indítás...';
-            // Üzenet küldése a C# alkalmazásnak
+            addLog('Indítás kérése elküldve...');
+            setProgress(0, 'Kezdés');
             const message = {
                 username: username,
                 memory: memory.toUpperCase()
             };
             window.chrome.webview.postMessage(JSON.stringify(message));
         });
+
+        addLog('Launcher betöltve. Várom a parancsokat.');
     </script>
 </body>
 </html>
