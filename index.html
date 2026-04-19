@@ -30,6 +30,23 @@
             margin-top: 0;
             color: #ffaa44;
         }
+        .input-group {
+            margin: 15px 0;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+            background: #333;
+            color: #fff;
+        }
         button {
             background: #ffaa44;
             border: none;
@@ -38,7 +55,7 @@
             font-weight: bold;
             border-radius: 30px;
             cursor: pointer;
-            margin: 10px;
+            margin-top: 20px;
             transition: 0.2s;
         }
         button:hover {
@@ -55,17 +72,41 @@
 <body>
     <div class="container">
         <h1>⚡ Sufni Launcher</h1>
-        <p>Üdvözlünk a launcher GUI-ban!</p>
-        <button id="playBtn">▶ Játék indítása</button>
-        <button id="settingsBtn">⚙ Beállítások</button>
+        <div class="input-group">
+            <label>Felhasználónév:</label>
+            <input type="text" id="username" value="Titanius">
+        </div>
+        <div class="input-group">
+            <label>Memória (pl. 2G, 4G):</label>
+            <input type="text" id="memory" value="2G">
+        </div>
+        <button id="launchBtn">🚀 Játék indítása</button>
         <div class="status" id="statusText">Készen áll</div>
     </div>
     <script>
-        document.getElementById('playBtn').addEventListener('click', () => {
-            document.getElementById('statusText').innerText = 'Indítás...';
-        });
-        document.getElementById('settingsBtn').addEventListener('click', () => {
-            alert('Beállítások – később bővíthető');
+        const launchBtn = document.getElementById('launchBtn');
+        const usernameInput = document.getElementById('username');
+        const memoryInput = document.getElementById('memory');
+        const statusDiv = document.getElementById('statusText');
+
+        launchBtn.addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            const memory = memoryInput.value.trim();
+            if (!username) {
+                statusDiv.innerText = 'Kérlek add meg a felhasználónevet!';
+                return;
+            }
+            if (!memory || !/^\d+[Gg]$/.test(memory)) {
+                statusDiv.innerText = 'A memória formátuma: pl. 2G, 4G';
+                return;
+            }
+            statusDiv.innerText = 'Indítás...';
+            // Üzenet küldése a C# alkalmazásnak
+            const message = {
+                username: username,
+                memory: memory.toUpperCase()
+            };
+            window.chrome.webview.postMessage(JSON.stringify(message));
         });
     </script>
 </body>
