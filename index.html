@@ -26,19 +26,9 @@
             text-align: center;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
-        h1 {
-            margin-top: 0;
-            color: #ffaa44;
-        }
-        .input-group {
-            margin: 15px 0;
-            text-align: left;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
+        h1 { margin-top: 0; color: #ffaa44; }
+        .input-group { margin: 15px 0; text-align: left; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
         input {
             width: 100%;
             padding: 8px;
@@ -58,27 +48,23 @@
             margin-top: 20px;
             transition: 0.2s;
         }
-        button:hover {
-            background: #ffcc66;
-            transform: scale(1.02);
-        }
+        button:hover { background: #ffcc66; transform: scale(1.02); }
         .progress-container {
             margin-top: 20px;
             background: #333;
             border-radius: 10px;
             overflow: hidden;
-            height: 20px;
         }
         .progress-bar {
             width: 0%;
-            height: 100%;
+            height: 20px;
             background: #ffaa44;
             transition: width 0.3s;
         }
-        .log-box {
+        .log-area {
             margin-top: 20px;
             background: #222;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 10px;
             height: 200px;
             overflow-y: auto;
@@ -86,16 +72,8 @@
             font-family: monospace;
             font-size: 12px;
         }
-        .log-line {
-            margin: 2px 0;
-            color: #ccc;
-            word-wrap: break-word;
-        }
-        .status {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #aaa;
-        }
+        .log-line { margin: 2px 0; color: #0f0; }
+        .log-error { color: #f66; }
     </style>
 </head>
 <body>
@@ -113,70 +91,47 @@
         <div class="progress-container">
             <div class="progress-bar" id="progressBar"></div>
         </div>
-        <div class="log-box" id="logBox"></div>
-        <div class="status" id="statusText">Készen áll</div>
+        <div id="taskLabel" style="margin-top: 5px; font-size: 12px;"></div>
+        <div class="log-area" id="logArea"></div>
     </div>
     <script>
         const launchBtn = document.getElementById('launchBtn');
         const usernameInput = document.getElementById('username');
         const memoryInput = document.getElementById('memory');
-        const statusDiv = document.getElementById('statusText');
         const progressBar = document.getElementById('progressBar');
-        const logBox = document.getElementById('logBox');
-
-        function addLog(message) {
-            const line = document.createElement('div');
-            line.className = 'log-line';
-            line.textContent = new Date().toLocaleTimeString() + ' - ' + message;
-            logBox.appendChild(line);
-            logBox.scrollTop = logBox.scrollHeight;
-        }
-
-        function setProgress(percent, task) {
-            progressBar.style.width = percent + '%';
-            statusDiv.innerText = task + ' - ' + percent + '%';
-        }
-
-        // Üzenet fogadása a C# alkalmazástól
-        window.chrome.webview.addEventListener('message', (event) => {
-            const data = event.data;
-            if (typeof data === 'string') {
-                if (data.startsWith('PROGRESS:')) {
-                    const parts = data.split(':');
-                    if (parts.length >= 4) {
-                        const percent = parseInt(parts[1], 10);
-                        const task = parts[3];
-                        setProgress(percent, task);
-                    }
-                } else if (data.startsWith('LOG:')) {
-                    addLog(data.substring(4));
-                } else {
-                    addLog(data);
-                }
-            }
-        });
+        const taskLabel = document.getElementById('taskLabel');
+        const logArea = document.getElementById('logArea');
 
         launchBtn.addEventListener('click', () => {
             const username = usernameInput.value.trim();
             const memory = memoryInput.value.trim();
-            if (!username) {
-                addLog('Kérlek add meg a felhasználónevet!');
-                return;
-            }
-            if (!memory || !/^\d+[Gg]$/.test(memory)) {
-                addLog('A memória formátuma: pl. 2G, 4G');
-                return;
-            }
+            if (!username) { addLog('Kérlek add meg a felhasználónevet!', true); return; }
+            if (!memory || !/^\d+[Gg]$/.test(memory)) { addLog('A memória formátuma: pl. 2G, 4G', true); return; }
             addLog('Indítás kérése elküldve...');
-            setProgress(0, 'Kezdés');
-            const message = {
-                username: username,
-                memory: memory.toUpperCase()
-            };
-            window.chrome.webview.postMessage(JSON.stringify(message));
+            window.chrome.webview.postMessage(JSON.stringify({ username, memory }));
         });
 
-        addLog('Launcher betöltve. Várom a parancsokat.');
+        function addLog(msg, isError = false) {
+            const div = document.createElement('div');
+            div.className = isError ? 'log-line log-error' : 'log-line';
+            div.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
+            logArea.appendChild(div);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function setProgress(percent, task) {
+            progressBar.style.width = percent + '%';
+            taskLabel.textContent = task;
+            if (percent === 100) setTimeout(() => { taskLabel.textContent = ''; }, 1000);
+        }
+
+        window.receiveMessage = (data) => {
+            if (data.type === 'log') {
+                addLog(data.content);
+            } else if (data.type === 'progress') {
+                setProgress(data.percent, data.task);
+            }
+        };
     </script>
 </body>
 </html>
