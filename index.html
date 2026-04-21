@@ -81,7 +81,7 @@
             backdrop-filter: blur(3px);
         }
 
-        /* --- fejléc (purple edge) --- */
+        /* --- fejléc --- */
         .header {
             display: flex;
             justify-content: space-between;
@@ -124,7 +124,7 @@
             border: 0.5px solid #8b5cf6;
         }
 
-        /* --- progress bar (lila acél) --- */
+        /* --- progress bar --- */
         .progress-area {
             margin: 18px 28px 8px 28px;
         }
@@ -153,7 +153,7 @@
             transition: width 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
         }
 
-        /* --- log terminál (purple gloomy) --- */
+        /* --- log terminál --- */
         .log-section {
             margin: 8px 28px 14px 28px;
             flex: 0 0 auto;
@@ -221,7 +221,7 @@
             color: #cbbef5;
         }
 
-        /* --- input mezők (purple industrial) --- */
+        /* --- input mezők --- */
         .controls {
             display: flex;
             gap: 20px;
@@ -257,7 +257,7 @@
             background: #120b26;
         }
 
-        /* --- indító gomb (purple edge) --- */
+        /* --- indító gomb --- */
         .action {
             margin: 8px 28px 12px 28px;
             display: flex;
@@ -338,7 +338,6 @@
             border-radius: 10px;
         }
 
-        /* --- particle canvas (lila csillagpor) --- */
         #voidCanvas {
             position: absolute;
             top: 0;
@@ -407,7 +406,6 @@
 
 <script>
     (function() {
-        // DOM elements
         const launchBtn = document.getElementById('launchBtn');
         const usernameInput = document.getElementById('username');
         const memoryInput = document.getElementById('memory');
@@ -418,9 +416,7 @@
         const statusLed = document.getElementById('statusLed');
 
         let isLaunching = false;
-        let fakeSequenceTimer = null;
         let currentProgress = 0;
-        let launchStartTime = null;
 
         // ----- local storage -----
         function loadStoredSettings() {
@@ -474,49 +470,11 @@
             setProgress(0);
         }
 
-        // ----- szimuláció (offline / fallback) -----
-        function simulateLaunch(username, memory) {
-            if (fakeSequenceTimer) clearTimeout(fakeSequenceTimer);
-            addLog(`⛏ indítás kérés: ${username} | ${memory} RAM`, 'info');
-            setProgress(5);
-            
-            const steps = [
-                { progress: 12, msg: '⎯ felhasználói profil ellenőrzése ...', delay: 380 },
-                { progress: 25, msg: '⎯ könyvtárak feloldása (libraries)', delay: 420 },
-                { progress: 40, msg: `⎯ memória foglalás: ${memory}`, delay: 300 },
-                { progress: 55, msg: '⎯ natív modulok betöltése (fabric)', delay: 450 },
-                { progress: 70, msg: '⎯ játékösszetevők integrálása', delay: 400 },
-                { progress: 85, msg: '⎯ indítási hookok aktiválása', delay: 380 },
-                { progress: 98, msg: '⎯ render előkészítés', delay: 350 }
-            ];
-            
-            let stepIndex = 0;
-            function runStep() {
-                if (!isLaunching) return;
-                if (stepIndex >= steps.length) {
-                    setProgress(100);
-                    addLog(`✔️ SUFNI elindult (${username} / ${memory})`, 'success');
-                    addLog(`🌌  műhely mód: játék fut a háttérben`, 'info');
-                    statusTextSpan.innerText = '● kész ●';
-                    statusLed.classList.add('active');
-                    isLaunching = false;
-                    launchBtn.disabled = false;
-                    return;
-                }
-                const step = steps[stepIndex];
-                setProgress(step.progress);
-                addLog(step.msg, 'info');
-                stepIndex++;
-                fakeSequenceTimer = setTimeout(runStep, step.delay);
-            }
-            runStep();
-        }
-
-        // ----- webview2 kommunikáció -----
+        // ----- WebView2 kommunikáció (nincs timeout, nincs szimuláció) -----
         function setupWebViewListener() {
             if (window.chrome?.webview) {
                 window.chrome.webview.addEventListener('message', (event) => {
-                    if (!isLaunching) return;
+                    // Az üzenet akkor is feldolgozásra kerül, ha épp nem indítunk (pl. későbbi állapot)
                     const raw = event.data;
                     try {
                         const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
@@ -527,31 +485,48 @@
                                 if (!isNaN(perc)) setProgress(perc);
                             } else if (line && line.startsWith('LOG:')) {
                                 addLog(line.substring(4), 'info');
+                            } else if (line === 'MINECRAFT_STARTED') {
+                                addLog('Minecraft elindult (ablak megjelent)', 'success');
+                                setProgress(100);
+                                isLaunching = false;
+                                launchBtn.disabled = false;
+                                statusLed.classList.add('active');
+                                statusTextSpan.innerText = '● fut ●';
+                            } else if (line === 'MINECRAFT_FINISHED') {
+                                addLog('Minecraft bezárult', 'info');
+                                isLaunching = false;
+                                launchBtn.disabled = false;
+                                setProgress(0);
+                                statusLed.classList.remove('active');
+                                statusTextSpan.innerText = '● kész ●';
+                            } else if (line === 'PYTHON_READY') {
+                                addLog('Python script elindult (backend készen)', 'success');
                             } else if (line) {
                                 addLog(line, 'info');
                             }
                         } else if (data.type === 'error') {
                             addLog(data.line || data.message, 'error');
+                            // Hiba esetén is feloldjuk a gombot
+                            if (isLaunching) {
+                                isLaunching = false;
+                                launchBtn.disabled = false;
+                                setProgress(0);
+                                statusLed.classList.remove('active');
+                                statusTextSpan.innerText = '● hiba ●';
+                            }
                         } else if (data.type === 'log') {
                             addLog(data.message, 'info');
-                        }
-                        if (data.type === 'done' || (data.progress && data.progress >= 100)) {
-                            setProgress(100);
-                            addLog(`✔️ Launcher sikeres (backend)`, 'success');
-                            isLaunching = false;
-                            launchBtn.disabled = false;
-                            statusLed.classList.add('active');
-                            statusTextSpan.innerText = '● kész ●';
-                            if (fakeSequenceTimer) clearTimeout(fakeSequenceTimer);
                         }
                     } catch(e) {
                         addLog(`üzenet feldolgozás hiba: ${raw}`, 'error');
                     }
                 });
+            } else {
+                addLog('ℹ️ WebView2 környezet nem elérhető – a launcher csak megjelenítésre használható', 'error');
             }
         }
 
-        // ----- indítás fő függvény -----
+        // ----- indítás fő függvény (nincs timeout, nincs szimuláció) -----
         function startLaunch() {
             if (isLaunching) {
                 addLog('Már fut egy indítás, várj!', 'error');
@@ -568,14 +543,12 @@
                 return;
             }
             saveSettings();
-            if (fakeSequenceTimer) clearTimeout(fakeSequenceTimer);
             resetProgress();
             addLog(`🚀 INDÍTÁS: ${username} | memória: ${memory}`, 'info');
             isLaunching = true;
             launchBtn.disabled = true;
             statusLed.classList.remove('active');
             statusTextSpan.innerText = '⏳ indítás folyamatban';
-            launchStartTime = Date.now();
             
             const hasWebView = !!(window.chrome && window.chrome.webview);
             if (hasWebView) {
@@ -585,30 +558,19 @@
                     memory: memory
                 };
                 window.chrome.webview.postMessage(JSON.stringify(message));
-                // timeout 7 sec -> fallback ha nem jön válasz
-                let fallbackTimer = setTimeout(() => {
-                    if (isLaunching === true && currentProgress === 0) {
-                        addLog('⚠️ WebView2 nem válaszol – átváltás szimulációs módra', 'error');
-                        simulateLaunch(username, memory);
-                        clearTimeout(fallbackTimer);
-                    }
-                }, 7000);
-                const interval = setInterval(() => {
-                    if (!isLaunching) {
-                        clearInterval(interval);
-                        clearTimeout(fallbackTimer);
-                    }
-                }, 300);
+                addLog('Indítási kérés elküldve a backendnek...', 'info');
+                // Nincs timeout, a backend válaszára várunk (MINECRAFT_STARTED vagy error)
             } else {
-                addLog('ℹ️ WebView2 nem elérhető – DEMO mód (szimuláció)', 'info');
-                simulateLaunch(username, memory);
+                addLog('❌ WebView2 nem elérhető – nem lehet indítani a Minecraftot', 'error');
+                isLaunching = false;
+                launchBtn.disabled = false;
+                statusTextSpan.innerText = '● hiba ●';
             }
         }
 
-        // ----- vészhelyzeti feloldás -----
+        // ----- vészhelyzeti feloldás (manuális) -----
         function forceUnlock() {
             if (isLaunching) {
-                if (fakeSequenceTimer) clearTimeout(fakeSequenceTimer);
                 isLaunching = false;
                 launchBtn.disabled = false;
                 addLog('⛔ folyamat megszakítva (manuális)', 'error');
@@ -618,16 +580,7 @@
             }
         }
 
-        // ----- időtúllépés ellenőrzés -----
-        setInterval(() => {
-            if (isLaunching && launchStartTime && (Date.now() - launchStartTime > 28000)) {
-                addLog('⚠️ időtúllépés, indítás megszakítva', 'error');
-                forceUnlock();
-                setProgress(0);
-            }
-        }, 1000);
-
-        // === LILA VOID RÉSZECSKÉK (szebb, mint a por, űrhatás) ===
+        // === LILA VOID RÉSZECSKÉK ===
         const canvas = document.getElementById('voidCanvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -645,8 +598,7 @@
                 this.size = Math.random() * 2.5 + 0.4;
                 this.speedX = (Math.random() - 0.5) * 0.12;
                 this.speedY = (Math.random() - 0.5) * 0.08;
-                // lila, pink, ibolya skála
-                const purpleHue = 260 + Math.random() * 40; // 260-300
+                const purpleHue = 260 + Math.random() * 40;
                 const sat = 60 + Math.random() * 35;
                 const lit = 50 + Math.random() * 35;
                 this.color = `hsla(${purpleHue}, ${sat}%, ${lit}%, ${Math.random() * 0.5 + 0.2})`;
@@ -670,7 +622,6 @@
             }
         }
 
-        // nagyobb, laza csillagok / glóriák
         let starLights = [];
         const STAR_COUNT = 40;
         
@@ -707,12 +658,10 @@
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.shadowBlur = 0;
-            // csillagok (háttérben pislákoló)
             for (let s of starLights) {
                 s.update(animationTime);
                 s.draw();
             }
-            // lebegő lila részecskék
             for (let p of particles) {
                 p.update();
                 p.draw();
