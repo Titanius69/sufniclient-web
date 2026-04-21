@@ -1,425 +1,383 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Sufni Launcher</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-        }
-        body {
-            width: 800px;
-            height: 600px;
-            overflow: hidden;
-            font-family: 'Segoe UI', 'Orbitron', 'Courier New', monospace;
-            background: #0a041a;
-            position: relative;
-            color: #e9e2ff;
-        }
-        .space-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(ellipse at 30% 40%, #2a1548 0%, #0b0420 100%);
-            z-index: 0;
-        }
-        .space-bg::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 70% 20%, rgba(139, 92, 246, 0.2), transparent 70%);
-            pointer-events: none;
-        }
-        #particleCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        }
-        .content {
-            position: relative;
-            z-index: 2;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            backdrop-filter: blur(3px);
-            background: radial-gradient(circle at 20% 30%, rgba(20, 8, 45, 0.6), rgba(5, 2, 15, 0.85));
-        }
-        .version {
-            position: absolute;
-            top: 12px;
-            left: 16px;
-            font-size: 12px;
-            font-family: monospace;
-            color: rgba(200, 150, 255, 0.8);
-            letter-spacing: 1px;
-            background: rgba(30, 15, 60, 0.6);
-            padding: 3px 12px;
-            border-radius: 40px;
-            backdrop-filter: blur(6px);
-            z-index: 3;
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            font-weight: 500;
-        }
-        .title {
-            text-align: center;
-            margin-top: 45px;
-            margin-bottom: 12px;
-        }
-        .title h1 {
-            font-size: 32px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #c084fc, #a855f7, #7c3aed);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
-            letter-spacing: 3px;
-        }
-        .title p {
-            font-size: 11px;
-            color: #b9a9f0;
-            margin-top: 6px;
-            letter-spacing: 1px;
-        }
-        .progress-container {
-            margin: 12px 35px 10px 35px;
-            background: #1f142f;
-            border-radius: 40px;
-            height: 12px;
-            overflow: hidden;
-            box-shadow: inset 0 1px 4px #00000066, 0 0 8px #a855f744;
-        }
-        .progress-bar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #b77eff, #9333ea, #7c3aed);
-            border-radius: 40px;
-            transition: width 0.2s ease;
-            box-shadow: 0 0 8px #c084fc;
-        }
-        .log-box {
-            margin: 5px 35px 18px 35px;
-            background: rgba(18, 8, 35, 0.7);
-            backdrop-filter: blur(6px);
-            border-radius: 24px;
-            padding: 14px;
-            height: 210px;
-            overflow-y: auto;
-            font-family: 'Fira Code', 'Cascadia Code', monospace;
-            font-size: 11px;
-            border: 1px solid rgba(168, 85, 247, 0.35);
-            box-shadow: inset 0 0 18px rgba(0,0,0,0.6), 0 0 12px rgba(139, 92, 246, 0.2);
-        }
-        .log-line {
-            margin: 5px 0;
-            white-space: pre-wrap;
-            word-break: break-all;
-            line-height: 1.35;
-            color: #ddd6fe;
-        }
-        .log-error {
-            color: #ffa7c4;
-            text-shadow: 0 0 4px #d946ef80;
-        }
-        .control-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 24px;
-            margin: 8px 35px 12px 35px;
-        }
-        .input-group {
-            flex: 1;
-            text-align: left;
-        }
-        .input-group label {
-            display: block;
-            font-size: 11px;
-            margin-bottom: 6px;
-            color: #d8b4fe;
-            letter-spacing: 1px;
-            font-weight: 600;
-        }
-        .input-group input {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.65);
-            border: 1px solid #a855f788;
-            border-radius: 60px;
-            padding: 9px 16px;
-            color: #f0eaff;
-            font-size: 13px;
-            outline: none;
-            transition: all 0.2s;
-            font-family: monospace;
-        }
-        .input-group input:focus {
-            border-color: #c084fc;
-            box-shadow: 0 0 12px #c084fc;
-            background: #140b25;
-        }
-        .launch-btn-wrapper {
-            display: flex;
-            justify-content: center;
-            margin: 8px 35px 18px 35px;
-        }
-        button {
-            background: linear-gradient(95deg, #a855f7, #7c3aed);
-            border: none;
-            padding: 10px 32px;
-            font-size: 19px;
-            font-weight: bold;
-            border-radius: 80px;
-            cursor: pointer;
-            color: #f3e8ff;
-            width: 75%;
-            max-width: 280px;
-            transition: all 0.25s;
-            box-shadow: 0 0 16px #a855f7aa;
-            letter-spacing: 2px;
-            font-family: inherit;
-            text-shadow: 0 0 2px #00000055;
-        }
-        button:hover {
-            transform: scale(1.02);
-            background: linear-gradient(95deg, #c084fc, #9333ea);
-            box-shadow: 0 0 24px #c084fc;
-            color: #ffffff;
-        }
-        button:active {
-            transform: scale(0.97);
-        }
-        .status {
-            text-align: center;
-            font-size: 11px;
-            margin: 0px 35px 15px 35px;
-            color: #c9b3ff;
-            font-family: monospace;
-            background: rgba(0,0,0,0.3);
-            padding: 4px;
-            border-radius: 60px;
-            width: auto;
-        }
-        .log-box::-webkit-scrollbar {
-            width: 5px;
-        }
-        .log-box::-webkit-scrollbar-track {
-            background: #2a1b3e;
-            border-radius: 10px;
-        }
-        .log-box::-webkit-scrollbar-thumb {
-            background: #a855f7;
-            border-radius: 10px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Sufni Launcher</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none;}
+:root{
+  --bg:#0c0c0c;--s1:#111;--s2:#161616;--s3:#1c1c1c;
+  --b1:#1f1f1f;--b2:#2a2a2a;--b3:#383838;
+  --acc:#00d4ff;--acc2:#0099bb;
+  --green:#00ff88;--amber:#ffb300;--red:#ff4040;
+  --txt:#ddd;--txt2:#888;--txt3:#444;
+  --mono:'JetBrains Mono',monospace;--ui:'Rajdhani',sans-serif;
+}
+body{width:800px;height:600px;overflow:hidden;background:var(--bg);color:var(--txt);font-family:var(--ui);}
+.wrap{display:flex;flex-direction:column;height:600px;}
+
+/* TOPBAR */
+.topbar{
+  height:50px;background:var(--s1);border-bottom:1px solid var(--b1);
+  display:flex;align-items:center;padding:0 18px;gap:0;flex-shrink:0;
+}
+.logo{display:flex;align-items:center;gap:10px;padding-right:18px;border-right:1px solid var(--b2);}
+.logo svg{width:26px;height:26px;flex-shrink:0;}
+.logo-name{font-family:var(--ui);font-size:19px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#fff;line-height:1;}
+.logo-name em{color:var(--acc);font-style:normal;}
+.logo-sub{font-family:var(--mono);font-size:8px;color:var(--txt3);letter-spacing:1px;margin-top:2px;}
+.tabs{display:flex;height:100%;margin-left:2px;}
+.tab{
+  height:100%;padding:0 16px;display:flex;align-items:center;
+  font-family:var(--ui);font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  color:var(--txt2);cursor:pointer;border-bottom:2px solid transparent;position:relative;top:1px;
+  transition:color .15s,border-color .15s;
+}
+.tab:hover{color:var(--txt);}
+.tab.on{color:#fff;border-bottom-color:var(--acc);}
+.tright{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.badge{font-family:var(--mono);font-size:9px;color:var(--txt3);background:var(--s3);border:1px solid var(--b2);padding:3px 8px;border-radius:2px;}
+.pulse{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;color:var(--green);}
+.pdot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green);animation:blink 2.5s ease infinite;}
+@keyframes blink{0%,100%{opacity:1}60%{opacity:.2}}
+
+/* BODY */
+.body{display:flex;flex:1;overflow:hidden;}
+
+/* LEFT SIDEBAR */
+.left{width:240px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden;}
+
+/* Art panel */
+.art{
+  height:138px;flex-shrink:0;position:relative;overflow:hidden;
+  background:#070d10;border-bottom:1px solid var(--b1);
+}
+.blocks-wrap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translateY(8px);}
+.bl{position:absolute;image-rendering:pixelated;}
+.sky-glow{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(0,212,255,.07),transparent 65%);}
+.horizon{position:absolute;bottom:0;left:0;right:0;height:1px;background:rgba(0,212,255,.12);}
+.art-ver{position:absolute;top:8px;right:10px;font-family:var(--mono);font-size:8px;color:rgba(0,212,255,.35);letter-spacing:1px;}
+
+/* Profile */
+.profile{padding:12px 14px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:10px;}
+.ava{
+  width:34px;height:34px;flex-shrink:0;background:var(--s3);border:1px solid var(--b2);border-radius:2px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:15px;color:var(--acc);
+}
+.p-info{flex:1;min-width:0;}
+.p-name{font-family:var(--ui);font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.p-mode{font-family:var(--mono);font-size:8px;color:var(--txt3);letter-spacing:1px;margin-top:1px;}
+
+/* Mod list */
+.sh{padding:8px 14px 5px;font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--txt3);text-transform:uppercase;border-bottom:1px solid var(--b1);}
+.mods{flex:1;overflow-y:auto;padding:4px 0;}
+.mods::-webkit-scrollbar{width:2px;}
+.mods::-webkit-scrollbar-thumb{background:var(--b3);}
+.mr{display:flex;align-items:center;gap:8px;padding:5px 14px;}
+.mr:hover{background:var(--s2);}
+.mdot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.mdot.on{background:var(--green);box-shadow:0 0 4px var(--green);}
+.mdot.off{background:var(--b3);}
+.mn{font-family:var(--mono);font-size:9.5px;color:var(--txt2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mv{font-family:var(--mono);font-size:8.5px;color:var(--txt3);}
+
+/* Stats */
+.stats{padding:10px 14px;border-top:1px solid var(--b1);display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.st{background:var(--s2);border:1px solid var(--b1);border-radius:2px;padding:5px 8px;}
+.sk{font-family:var(--mono);font-size:7.5px;color:var(--txt3);letter-spacing:1px;text-transform:uppercase;margin-bottom:1px;}
+.sv{font-family:var(--ui);font-size:14px;font-weight:700;color:var(--txt);}
+.sv.a{color:var(--acc);}
+
+/* RIGHT */
+.right{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.cout-head{
+  padding:7px 14px;background:var(--s2);border-bottom:1px solid var(--b1);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.cout-title{font-family:var(--mono);font-size:8.5px;color:var(--txt3);letter-spacing:2px;text-transform:uppercase;}
+.cout-ctrl{display:flex;align-items:center;gap:10px;}
+.clr{font-family:var(--mono);font-size:8.5px;color:var(--txt3);border:1px solid var(--b2);background:none;padding:2px 8px;border-radius:2px;cursor:pointer;}
+.clr:hover{color:var(--txt);border-color:var(--b3);}
+.lc{font-family:var(--mono);font-size:8.5px;color:var(--txt3);}
+
+.cout{flex:1;overflow-y:auto;padding:8px 12px;background:var(--bg);font-family:var(--mono);font-size:10px;line-height:1.65;}
+.cout::-webkit-scrollbar{width:3px;}
+.cout::-webkit-scrollbar-thumb{background:var(--b2);}
+.cl{display:flex;gap:7px;padding:1px 0;}
+.cl:hover{background:rgba(255,255,255,.015);}
+.cts{color:var(--txt3);flex-shrink:0;width:58px;}
+.ctag{flex-shrink:0;width:36px;text-align:center;font-size:7.5px;letter-spacing:.5px;border-radius:2px;padding:1px 0;align-self:flex-start;margin-top:2px;}
+.ti{background:rgba(0,212,255,.08);color:var(--acc2);}
+.ts{background:rgba(120,120,255,.08);color:#8888ff;}
+.tw{background:rgba(255,179,0,.08);color:var(--amber);}
+.te{background:rgba(255,64,64,.08);color:var(--red);}
+.tok{background:rgba(0,255,136,.08);color:var(--green);}
+.ctxt{color:var(--txt2);flex:1;word-break:break-all;}
+.ctxt.ok{color:var(--green);}
+.ctxt.err{color:var(--red);}
+.ctxt.dim{color:var(--txt3);}
+
+/* PROGRESS */
+.prog{padding:9px 14px 7px;background:var(--s1);border-top:1px solid var(--b1);flex-shrink:0;}
+.pr{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.ptask{font-family:var(--mono);font-size:8.5px;color:var(--txt3);letter-spacing:1px;text-transform:uppercase;}
+.ppct{font-family:var(--mono);font-size:10px;color:var(--acc);font-weight:500;}
+.ptrack{height:2px;background:var(--b1);position:relative;overflow:hidden;}
+.pfill{height:100%;background:var(--acc);transition:width .25s ease;position:relative;}
+.pfill.glow{box-shadow:0 0 6px var(--acc);}
+
+/* LAUNCH */
+.lrow{display:flex;gap:10px;align-items:flex-end;padding:11px 14px;background:var(--s1);border-top:1px solid var(--b1);flex-shrink:0;}
+.ig{display:flex;flex-direction:column;gap:4px;}
+.il{font-family:var(--mono);font-size:7.5px;color:var(--txt3);letter-spacing:1.5px;text-transform:uppercase;}
+input[type=text]{
+  background:var(--bg);border:1px solid var(--b2);border-radius:2px;
+  padding:7px 10px;color:#fff;font-family:var(--mono);font-size:11px;outline:none;
+  transition:border-color .15s,box-shadow .15s;
+}
+input[type=text]:focus{border-color:var(--acc);box-shadow:0 0 0 1px rgba(0,212,255,.15);}
+.iu{width:145px;}
+.im{width:72px;}
+.lbtn{
+  margin-left:auto;background:var(--acc);border:none;border-radius:2px;
+  height:34px;padding:0 24px;font-family:var(--ui);font-size:15px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;color:#000;cursor:pointer;
+  transition:background .15s,box-shadow .15s,transform .1s;
+  box-shadow:0 0 14px rgba(0,212,255,.2);white-space:nowrap;
+}
+.lbtn:hover{background:#1af0ff;box-shadow:0 0 22px rgba(0,212,255,.4);transform:translateY(-1px);}
+.lbtn:active{transform:none;box-shadow:0 0 6px rgba(0,212,255,.15);}
+.lbtn:disabled{background:var(--b2);color:var(--txt3);cursor:not-allowed;box-shadow:none;transform:none;}
+
+@keyframes si{from{opacity:0;transform:translateY(3px);}to{opacity:1;transform:none;}}
+.cl{animation:si .12s ease;}
+</style>
 </head>
 <body>
-    <div class="space-bg"></div>
-    <canvas id="particleCanvas"></canvas>
-    <div class="content">
-        <div class="version">1.19.4</div>
-        <div class="title">
-            <h1>SUFNI LAUNCHER</h1>
-            <p>fabric edition</p>
-        </div>
+<div class="wrap">
 
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
+  <div class="topbar">
+    <div class="logo">
+      <svg viewBox="0 0 26 26" fill="none">
+        <rect x="1" y="1" width="11" height="11" fill="#4a7c3f"/>
+        <rect x="1" y="1" width="11" height="4" fill="#6ab852"/>
+        <rect x="14" y="1" width="11" height="11" fill="#555"/>
+        <rect x="1" y="14" width="11" height="11" fill="#6b4c2a"/>
+        <rect x="14" y="14" width="11" height="11" fill="#888"/>
+        <rect x="15" y="2" width="4" height="4" fill="#00d4ff" opacity=".5"/>
+      </svg>
+      <div>
+        <div class="logo-name">SUFNI<em>CLIENT</em></div>
+        <div class="logo-sub">fabric edition · 1.19.4</div>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="tab on">Játék</div>
+      <div class="tab">Modok</div>
+      <div class="tab">Beállítás</div>
+    </div>
+    <div class="tright">
+      <div class="badge">f-0.18.4</div>
+      <div class="pulse"><div class="pdot"></div>online</div>
+    </div>
+  </div>
 
-        <div class="log-box" id="logBox">
-            <div class="log-line">⛭ rendszer indul ...</div>
-            <div class="log-line">🌌 készen áll a mélység</div>
-        </div>
+  <div class="body">
+    <div class="left">
 
-        <div class="control-row">
-            <div class="input-group">
-                <label>🌀 FELHASZNÁLÓNÉV</label>
-                <input type="text" id="username" value="Titanius" spellcheck="false">
-            </div>
-            <div class="input-group">
-                <label>💾 MEMÓRIA (pl. 2G, 4G)</label>
-                <input type="text" id="memory" value="2G" spellcheck="false">
-            </div>
+      <div class="art">
+        <div class="sky-glow"></div>
+        <div class="blocks-wrap">
+          <canvas id="blkCanvas" width="160" height="100"></canvas>
         </div>
+        <div class="horizon"></div>
+        <div class="art-ver">1.19.4</div>
+      </div>
 
-        <div class="launch-btn-wrapper">
-            <button id="launchBtn">▷ INDÍTÁS ◁</button>
+      <div class="profile">
+        <div class="ava" id="ava">T</div>
+        <div class="p-info">
+          <div class="p-name" id="pname">Titanius</div>
+          <div class="p-mode">offline · cracked</div>
         </div>
-        <div class="status" id="statusText">● készen áll ●</div>
+      </div>
+
+      <div class="sh">Aktív modok</div>
+      <div class="mods">
+        <div class="mr"><div class="mdot on"></div><span class="mn">fabric-api</span><span class="mv">0.83.0</span></div>
+        <div class="mr"><div class="mdot on"></div><span class="mn">sodium</span><span class="mv">0.4.10</span></div>
+        <div class="mr"><div class="mdot on"></div><span class="mn">lithium</span><span class="mv">0.11.2</span></div>
+        <div class="mr"><div class="mdot on"></div><span class="mn">iris</span><span class="mv">1.6.4</span></div>
+        <div class="mr"><div class="mdot on"></div><span class="mn">carpet</span><span class="mv">1.4.112</span></div>
+        <div class="mr"><div class="mdot on"></div><span class="mn">voxelmap</span><span class="mv">1.12.13</span></div>
+        <div class="mr"><div class="mdot off"></div><span class="mn">replay-mod</span><span class="mv">2.6.14</span></div>
+        <div class="mr"><div class="mdot off"></div><span class="mn">presence-footsteps</span><span class="mv">1.9.1</span></div>
+      </div>
+
+      <div class="stats">
+        <div class="st"><div class="sk">RAM</div><div class="sv a" id="ramStat">2G</div></div>
+        <div class="st"><div class="sk">Java</div><div class="sv">17.x</div></div>
+        <div class="st"><div class="sk">Loader</div><div class="sv">0.18.4</div></div>
+        <div class="st"><div class="sk">Modok</div><div class="sv a">6 / 8</div></div>
+      </div>
     </div>
 
-    <script>
-        (function() {
-            const launchBtn = document.getElementById('launchBtn');
-            const usernameInput = document.getElementById('username');
-            const memoryInput = document.getElementById('memory');
-            const progressBar = document.getElementById('progressBar');
-            const logBox = document.getElementById('logBox');
-            const statusDiv = document.getElementById('statusText');
+    <div class="right">
+      <div class="cout-head">
+        <div class="cout-title">Konzol</div>
+        <div class="cout-ctrl">
+          <button class="clr" id="clearBtn">törlés</button>
+          <span class="lc" id="lcount">0 sor</span>
+        </div>
+      </div>
+      <div class="cout" id="cout"></div>
+      <div class="prog">
+        <div class="pr">
+          <div class="ptask" id="ptask">várakozás</div>
+          <div class="ppct" id="ppct">—</div>
+        </div>
+        <div class="ptrack"><div class="pfill" id="pfill" style="width:0%"></div></div>
+      </div>
+      <div class="lrow">
+        <div class="ig">
+          <div class="il">Felhasználónév</div>
+          <input type="text" class="iu" id="username" value="Titanius" spellcheck="false">
+        </div>
+        <div class="ig">
+          <div class="il">RAM</div>
+          <input type="text" class="im" id="memory" value="2G" spellcheck="false">
+        </div>
+        <button class="lbtn" id="launchBtn">▶ INDÍTÁS</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-            function addLog(message, isError = false) {
-                const line = document.createElement('div');
-                line.className = 'log-line' + (isError ? ' log-error' : '');
-                const timestamp = new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute:'2-digit', second:'2-digit' });
-                line.textContent = `[${timestamp}] ${message}`;
-                logBox.appendChild(line);
-                line.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
+<script>
+(function(){
+  // Pixel block art on canvas
+  const c=document.getElementById('blkCanvas');
+  const x=c.getContext('2d');
+  x.imageSmoothingEnabled=false;
+  const B=16;
+  const cols={gr:'#4a7c3f',gt:'#6ab852',di:'#6b4c2a',st:'#7a7a7a',wd:'#9c7a3a',lv:'#2d5a1e',sk:'#1a3a4a'};
+  function bl(cx,cy,cl){x.fillStyle=cols[cl];x.fillRect(cx*B,cy*B,B,B);x.fillStyle='rgba(0,0,0,.25)';x.fillRect(cx*B+B-1,cy*B,1,B);x.fillRect(cx*B,cy*B+B-1,B,1);}
+  // sky
+  x.fillStyle='#0a1820';x.fillRect(0,0,160,100);
+  // stars
+  for(let i=0;i<18;i++){x.fillStyle='rgba(255,255,255,'+(Math.random()*.4+.1)+')';x.fillRect(Math.random()*160|0,Math.random()*40|0,1,1);}
+  // moon
+  x.fillStyle='rgba(200,220,255,.7)';x.fillRect(130,8,6,6);x.fillStyle='#0a1820';x.fillRect(132,8,4,4);
+  // terrain row 2 (stone)
+  for(let i=0;i<10;i++)bl(i,4,'st');
+  // terrain row 1 (dirt)
+  for(let i=0;i<10;i++)bl(i,3,'di');
+  // terrain row 0 (grass)
+  for(let i=0;i<10;i++){x.fillStyle=cols.gr;x.fillRect(i*B,2*B,B,B);x.fillStyle=cols.gt;x.fillRect(i*B,2*B,B,3);x.fillStyle='rgba(0,0,0,.2)';x.fillRect(i*B+B-1,2*B,1,B);x.fillRect(i*B,2*B+B-1,B,1);}
+  // tree trunk
+  x.fillStyle=cols.wd;x.fillRect(5*B+4,1*B,8,B*2);
+  // leaves
+  x.fillStyle=cols.lv;x.fillRect(4*B,0,3*B,B*2);x.fillStyle='rgba(0,0,0,.15)';x.fillRect(4*B+B*3-1,0,1,B*2);
+  // water accent
+  x.fillStyle='rgba(0,212,255,.12)';x.fillRect(8*B,2*B,2*B,B);
+  x.fillStyle='rgba(0,212,255,.06)';x.fillRect(8*B,2*B,2*B,4);
 
-            function setProgress(percent) {
-                let p = Math.min(100, Math.max(0, percent));
-                progressBar.style.width = p + '%';
-                statusDiv.textContent = `folyamat: ${p}%`;
-                if (p === 100) statusDiv.textContent = `✔️ kész ✔️`;
-            }
+  const cout=document.getElementById('cout');
+  const pfill=document.getElementById('pfill');
+  const ptask=document.getElementById('ptask');
+  const ppct=document.getElementById('ppct');
+  const lcount=document.getElementById('lcount');
+  const btn=document.getElementById('launchBtn');
+  const uIn=document.getElementById('username');
+  const mIn=document.getElementById('memory');
+  let lines=0;
 
-            if (window.chrome?.webview) {
-                window.chrome.webview.addEventListener('message', (event) => {
-                    const data = event.data;
-                    if (typeof data === 'string') {
-                        try {
-                            const parsed = JSON.parse(data);
-                            if (parsed.type === 'output') {
-                                const line = parsed.line;
-                                if (line.startsWith('PROGRESS:')) {
-                                    const parts = line.split(':');
-                                    if (parts.length >= 2) {
-                                        const percent = parseInt(parts[1]);
-                                        if (!isNaN(percent)) setProgress(percent);
-                                    }
-                                } else if (line.startsWith('LOG:')) {
-                                    addLog(line.substring(4));
-                                } else {
-                                    addLog(line);
-                                }
-                            } else if (parsed.type === 'error') {
-                                addLog(parsed.line, true);
-                            } else if (parsed.type === 'log') {
-                                addLog(parsed.message);
-                            }
-                        } catch(e) {
-                            addLog(data, false);
-                        }
-                    }
-                });
-            }
+  function ts(){return new Date().toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
 
-            launchBtn.addEventListener('click', () => {
-                const username = usernameInput.value.trim();
-                let memory = memoryInput.value.trim();
-                if (!username) {
-                    addLog('❌ Kérlek add meg a felhasználónevet!', true);
-                    return;
-                }
-                if (!memory || !/^\d+[Gg]$/.test(memory)) {
-                    addLog('❌ A memória formátuma: pl. 2G, 4G', true);
-                    return;
-                }
-                memory = memory.toUpperCase();
-                addLog(`🚀 Indítás kérése elküldve (${username} / ${memory})`);
-                setProgress(0);
-                const message = {
-                    command: 'start',
-                    username: username,
-                    memory: memory
-                };
-                if (window.chrome?.webview) {
-                    window.chrome.webview.postMessage(JSON.stringify(message));
-                } else {
-                    addLog('⚠️ WebView2 környezet nem aktív (tesztüzem)', false);
-                    setProgress(35);
-                    setTimeout(() => setProgress(70), 500);
-                    setTimeout(() => {
-                        setProgress(100);
-                        addLog('✨ [DEMO] Az indítás megtörtént (fő rendszer offline)', false);
-                    }, 1200);
-                }
-            });
+  function log(msg,type){
+    lines++;lcount.textContent=lines+' sor';
+    const map={info:['ti','INFO'],sys:['ts','SYS'],warn:['tw','WARN'],error:['te','ERR'],ok:['tok','OK']};
+    const[tc,tl]=map[type||'info']||map.info;
+    const tc2=type==='error'?'err':type==='ok'?'ok':'';
+    const row=document.createElement('div');row.className='cl';
+    row.innerHTML=`<span class="cts">${ts()}</span><span class="ctag ${tc}">${tl}</span><span class="ctxt ${tc2}"></span>`;
+    row.querySelector('.ctxt').textContent=msg;
+    cout.appendChild(row);row.scrollIntoView({block:'nearest'});
+  }
 
-            const canvas = document.getElementById('particleCanvas');
-            const ctx = canvas.getContext('2d');
-            let particles = [];
-            const PARTICLE_COUNT = 170;
+  function prog(p,label){
+    const v=Math.min(100,Math.max(0,p));
+    pfill.style.width=v+'%';
+    ppct.textContent=v===0?'—':v+'%';
+    if(v>0&&v<100){pfill.classList.add('glow');pfill.style.background='var(--acc)';}
+    else if(v===100){pfill.style.background='var(--green)';pfill.classList.remove('glow');}
+    if(label)ptask.textContent=label.toUpperCase().slice(0,28);
+    if(v===100)ptask.textContent='KÉSZ';
+  }
 
-            function resizeCanvas() {
-                canvas.width = 800;
-                canvas.height = 600;
-            }
-            resizeCanvas();
+  function updateProfile(){
+    const u=uIn.value.trim()||'?';
+    document.getElementById('pname').textContent=u;
+    document.getElementById('ava').textContent=u.charAt(0).toUpperCase();
+    document.getElementById('ramStat').textContent=(mIn.value.trim()||'2G').toUpperCase();
+  }
+  uIn.addEventListener('input',updateProfile);
+  mIn.addEventListener('input',updateProfile);
 
-            class Particle {
-                constructor() {
-                    this.x = Math.random() * canvas.width;
-                    this.y = Math.random() * canvas.height;
-                    this.size = Math.random() * 2.4 + 0.5;
-                    this.speedX = (Math.random() - 0.5) * 0.22;
-                    this.speedY = (Math.random() - 0.5) * 0.12;
-                    this.alpha = Math.random() * 0.65 + 0.2;
-                    const purpleHues = [180, 150, 210, 170, 190];
-                    const base = purpleHues[Math.floor(Math.random() * purpleHues.length)];
-                    this.color = `rgba(${base + 40}, ${base}, 255, ${this.alpha})`;
-                }
-                update() {
-                    this.x += this.speedX;
-                    this.y += this.speedY;
-                    if (this.x < 0) this.x = canvas.width;
-                    if (this.x > canvas.width) this.x = 0;
-                    if (this.y < 0) this.y = canvas.height;
-                    if (this.y > canvas.height) this.y = 0;
-                }
-                draw() {
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fillStyle = this.color;
-                    ctx.fill();
-                    if (this.size > 1.5) {
-                        ctx.shadowBlur = 5;
-                        ctx.shadowColor = "#c084fc";
-                        ctx.fill();
-                        ctx.shadowBlur = 0;
-                    }
-                }
-            }
+  document.getElementById('clearBtn').addEventListener('click',()=>{cout.innerHTML='';lines=0;lcount.textContent='0 sor';});
 
-            function initParticles() {
-                particles = [];
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    particles.push(new Particle());
-                }
-            }
+  log('SufniLauncher inicializálva.','sys');
+  log('Várakozás indításra...','info');
 
-            function animateParticles() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                for (let p of particles) {
-                    p.update();
-                    p.draw();
-                }
-                requestAnimationFrame(animateParticles);
-            }
+  if(window.chrome?.webview){
+    window.chrome.webview.addEventListener('message',ev=>{
+      const d=ev.data;if(typeof d!=='string')return;
+      try{
+        const p=JSON.parse(d);
+        if(p.type==='output'){
+          const line=p.line;
+          if(line.startsWith('PROGRESS:')){const parts=line.split(':');const n=parseInt(parts[1]);if(!isNaN(n))prog(n,parts[3]||'Letöltés');}
+          else if(line.startsWith('LOG:'))log(line.substring(4));
+          else if(line==='MINECRAFT_STARTED'){log('Minecraft ablak megjelent.','ok');}
+          else if(line==='MINECRAFT_FINISHED'){log('Minecraft bezárult.','sys');btn.disabled=false;prog(0,'');}
+          else log(line);
+        }else if(p.type==='error')log(p.line,'error');
+        else if(p.type==='log'){
+          const m=p.message||'';
+          const t=m.toLowerCase().includes('hiba')||m.toLowerCase().includes('error')?'error':m.toLowerCase().includes('kész')||m.toLowerCase().includes('befejez')?'ok':'info';
+          log(m,t);
+          if(m.includes('befejez'))btn.disabled=false;
+        }
+      }catch(e){log(d);}
+    });
+  }
 
-            initParticles();
-            animateParticles();
-
-            window.addEventListener('resize', () => {
-                if (canvas.width !== 800 || canvas.height !== 600) {
-                    resizeCanvas();
-                    initParticles();
-                }
-            });
-        })();
-    </script>
+  btn.addEventListener('click',()=>{
+    const user=uIn.value.trim();let mem=mIn.value.trim();
+    if(!user){log('Felhasználónév megadása kötelező!','error');return;}
+    if(!mem||!/^\d+[Gg]$/.test(mem)){log('Memória formátum hibás (pl. 2G, 4G)','error');return;}
+    mem=mem.toUpperCase();updateProfile();
+    btn.disabled=true;prog(0,'Inicializálás');
+    log(`Indítás: ${user}  /  RAM: ${mem}`,'sys');
+    if(window.chrome?.webview){
+      window.chrome.webview.postMessage(JSON.stringify({command:'start',username:user,memory:mem}));
+    }else{
+      log('WebView2 nem aktív — demo mód','warn');
+      const steps=['Vanilla manifest','Vanilla lib','Asset index','Vanilla client','Fabric profil','Fabric lib','Modok','Elindítás'];
+      let s=0,pv=0;
+      const iv=setInterval(()=>{
+        pv+=Math.random()*4+2;
+        const si=Math.floor(pv/12.5);
+        if(si<steps.length&&si!==s){s=si;log(steps[s]+'...','info');}
+        if(pv>=100){pv=100;clearInterval(iv);log('Minecraft elindult.','ok');setTimeout(()=>{btn.disabled=false;},600);}
+        prog(Math.round(pv),steps[Math.min(s,steps.length-1)]);
+      },110);
+    }
+  });
+})();
+</script>
 </body>
 </html>
