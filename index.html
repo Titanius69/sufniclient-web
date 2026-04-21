@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>SUFNI ClIENT</title>
+    <title>SUFNI CLIENT</title>
     <style>
         * {
             margin: 0;
@@ -17,19 +17,19 @@
             height: 600px;
             overflow: hidden;
             font-family: 'Segoe UI', 'IBM Plex Mono', 'Courier New', monospace;
-            background: #0b041a;
+            background: #0a0a0c;
             position: relative;
-            color: #e2d9ff;
+            color: #e0e0e0;
         }
 
-        /* --- mélylila ipari háttér --- */
+        /* háttér - letisztult sötét ipari */
         .workshop-bg {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(ellipse at 40% 45%, #2a1548 0%, #0a031f 100%);
+            background: #0c0c10;
             z-index: 0;
         }
         .workshop-bg::before {
@@ -37,38 +37,12 @@
             position: absolute;
             inset: 0;
             background-image: 
-                repeating-linear-gradient(0deg, rgba(120, 70, 200, 0.08) 0px, rgba(120, 70, 200, 0.08) 1px, transparent 1px, transparent 4px),
-                repeating-linear-gradient(90deg, rgba(100, 60, 180, 0.05) 0px, rgba(100, 60, 180, 0.05) 1px, transparent 1px, transparent 6px);
-            pointer-events: none;
-        }
-        .workshop-bg::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 70% 20%, rgba(139, 92, 246, 0.2), transparent 70%);
+                repeating-linear-gradient(0deg, rgba(80,80,100,0.05) 0px, rgba(80,80,100,0.05) 1px, transparent 1px, transparent 4px),
+                repeating-linear-gradient(90deg, rgba(70,70,90,0.03) 0px, rgba(70,70,90,0.03) 1px, transparent 1px, transparent 6px);
             pointer-events: none;
         }
 
-        /* --- CRT utóhatás --- */
-        .crt-glow {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 2;
-            box-shadow: inset 0 0 18px rgba(0,0,0,0.5), inset 0 0 2px rgba(168, 85, 247, 0.25);
-        }
-        .scanline {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 2px, transparent 2px, transparent 6px);
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        /* --- fő tartalom --- */
+        /* fő tartalom - áttetsző réteg nélkül, tiszta */
         .content {
             position: relative;
             z-index: 10;
@@ -76,52 +50,50 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            background: rgba(10, 5, 25, 0.82);
-            backdrop-filter: blur(2px);
+            background: #0a0a0e;
         }
 
-        /* --- fejléc (purple edge) --- */
+        /* fejléc - minimal */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
             padding: 16px 28px 8px 28px;
-            border-bottom: 1px solid #4a3a70;
+            border-bottom: 1px solid #2a2a36;
         }
         .title h1 {
             font-size: 26px;
             font-weight: 600;
             letter-spacing: -0.5px;
-            color: #f0eaff;
-            text-shadow: 0 1px 0 #a855f722;
-            font-family: 'Segoe UI', 'Orbitron', monospace;
+            color: #f0f0f0;
+            font-family: 'Segoe UI', monospace;
         }
         .title h1 span {
-            color: #b77eff;
+            color: #7a8cff;
             font-weight: 700;
         }
         .badge {
-            background: #1f1a30;
+            background: #18181e;
             padding: 4px 12px;
             border-radius: 32px;
             font-size: 10px;
             font-weight: 500;
             font-family: monospace;
-            border-left: 3px solid #a855f7;
+            border-left: 3px solid #7a8cff;
             letter-spacing: 0.5px;
-            color: #cdbef5;
+            color: #c0c0e0;
         }
         .version-tag {
             font-size: 11px;
             font-family: monospace;
-            background: #1a142b;
+            background: #15151c;
             padding: 4px 12px;
             border-radius: 20px;
-            color: #cbbaf0;
-            border: 0.5px solid #5e4a8c;
+            color: #b0b0d0;
+            border: 0.5px solid #3a3a50;
         }
 
-        /* --- progress bar (lila acél) --- */
+        /* progress bar */
         .progress-area {
             margin: 18px 28px 8px 28px;
         }
@@ -131,26 +103,25 @@
             font-size: 10px;
             font-family: monospace;
             margin-bottom: 6px;
-            color: #b8a9f0;
+            color: #b0b0c0;
             letter-spacing: 0.4px;
         }
         .progress-bar-container {
-            background: #110c1c;
+            background: #18181e;
             border-radius: 2px;
             height: 8px;
             overflow: hidden;
-            border: 0.5px solid #5a4790;
+            border: 0.5px solid #3a3a50;
             box-shadow: inset 0 1px 3px #00000055;
         }
         .progress-fill {
             width: 0%;
             height: 100%;
-            background: linear-gradient(90deg, #b77eff, #a855f7);
-            box-shadow: 0 0 6px #c084fc;
+            background: #7a8cff;
             transition: width 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
         }
 
-        /* --- log terminál (purple gloomy) --- */
+        /* log terminál - letisztult */
         .log-section {
             margin: 8px 28px 14px 28px;
             flex: 0 0 auto;
@@ -164,16 +135,16 @@
         .log-header span {
             font-size: 11px;
             font-weight: 500;
-            background: #1f1a30;
+            background: #15151c;
             padding: 2px 10px;
             border-radius: 20px;
             letter-spacing: 0.6px;
-            color: #cfc2f5;
+            color: #c0c0e0;
         }
         .clear-log {
             background: none;
             border: none;
-            color: #9a88c5;
+            color: #8a8aa0;
             font-family: monospace;
             font-size: 10px;
             cursor: pointer;
@@ -182,12 +153,12 @@
             transition: all 0.1s;
         }
         .clear-log:hover {
-            background: #342a52;
-            color: #d9c6ff;
+            background: #252530;
+            color: #e0e0f0;
         }
         .log-box {
-            background: #09060f;
-            border: 1px solid #41366b;
+            background: #07070a;
+            border: 1px solid #2a2a36;
             border-radius: 6px;
             padding: 12px 12px;
             height: 200px;
@@ -195,28 +166,28 @@
             font-family: 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
             font-size: 11px;
             line-height: 1.45;
-            box-shadow: inset 0 0 12px rgba(0,0,0,0.6);
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.5);
         }
         .log-line {
             margin: 4px 0;
             white-space: pre-wrap;
             word-break: break-word;
-            color: #dbd0ff;
+            color: #d0d0e8;
             border-left: 2px solid transparent;
             padding-left: 8px;
         }
         .log-error {
-            color: #f0a6c9;
-            border-left-color: #d946ef;
+            color: #ff9fbf;
+            border-left-color: #ff6b8b;
         }
         .log-success {
-            color: #b9f5c0;
+            color: #a5f0c0;
         }
         .log-info {
-            color: #b7b0e6;
+            color: #b8b8e0;
         }
 
-        /* --- input mezők (purple industrial) --- */
+        /* input mezők */
         .controls {
             display: flex;
             gap: 20px;
@@ -231,54 +202,52 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #b6a4f0;
+            color: #9a9ac0;
             margin-bottom: 6px;
         }
         .input-field input {
             width: 100%;
-            background: #0e0920;
-            border: 1px solid #5b4790;
+            background: #0e0e14;
+            border: 1px solid #3a3a50;
             border-radius: 6px;
             padding: 8px 12px;
-            color: #f2eaff;
+            color: #f0f0f0;
             font-size: 13px;
             font-family: 'Courier New', monospace;
             outline: none;
             transition: 0.1s linear;
         }
         .input-field input:focus {
-            border-color: #c084fc;
-            box-shadow: 0 0 0 1px #b77eff66;
-            background: #17112e;
+            border-color: #7a8cff;
+            box-shadow: 0 0 0 1px #7a8cff66;
+            background: #14141c;
         }
 
-        /* --- indító gomb (purple edge) --- */
+        /* indító gomb */
         .action {
             margin: 8px 28px 12px 28px;
             display: flex;
             justify-content: center;
         }
         .launch-btn {
-            background: #1f1a33;
-            border: 1px solid #a855f7;
+            background: #18181e;
+            border: 1px solid #7a8cff;
             padding: 10px 28px;
             font-size: 18px;
             font-weight: 600;
             border-radius: 40px;
             cursor: pointer;
-            color: #f0e9ff;
+            color: #f0f0f0;
             width: 100%;
             max-width: 260px;
             transition: all 0.2s;
             font-family: 'Segoe UI', monospace;
             letter-spacing: 1.5px;
-            backdrop-filter: blur(2px);
         }
         .launch-btn:hover {
-            background: #a855f7;
-            border-color: #d6a9ff;
-            color: #0c0a18;
-            box-shadow: 0 0 12px #b77effaa;
+            background: #7a8cff;
+            border-color: #a0b0ff;
+            color: #0a0a0c;
         }
         .launch-btn:active {
             transform: scale(0.97);
@@ -287,19 +256,19 @@
             opacity: 0.5;
             transform: none;
             cursor: not-allowed;
-            background: #1f1a33;
-            border-color: #5a4790;
+            background: #18181e;
+            border-color: #4a4a60;
         }
 
         .status-area {
             margin: 2px 28px 16px 28px;
             font-size: 10px;
             font-family: monospace;
-            background: #110c1cbb;
+            background: #0e0e14bb;
             padding: 6px 12px;
             border-radius: 24px;
             text-align: center;
-            color: #cbbef5;
+            color: #b0b0d0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -310,54 +279,48 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: #554b7a;
+            background: #3a3a50;
             box-shadow: 0 0 2px currentColor;
         }
         .led.active {
-            background: #c084fc;
-            box-shadow: 0 0 6px #c084fc;
+            background: #7a8cff;
+            box-shadow: 0 0 6px #7a8cff;
         }
 
         .log-box::-webkit-scrollbar {
             width: 5px;
         }
         .log-box::-webkit-scrollbar-track {
-            background: #1c1630;
+            background: #18181e;
         }
         .log-box::-webkit-scrollbar-thumb {
-            background: #7c66b0;
+            background: #5a5a80;
             border-radius: 10px;
         }
 
+        /* nincs részecske, nincs extra effekt */
         #dustCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
+            display: none;
+        }
+        .crt-glow, .scanline {
+            display: none;
         }
     </style>
 </head>
 <body>
 <div class="workshop-bg"></div>
-<canvas id="dustCanvas"></canvas>
-<div class="crt-glow"></div>
-<div class="scanline"></div>
-
 <div class="content">
     <div class="header">
         <div class="title">
             <h1>SUFNI <span>//</span> LAUNCHER</h1>
         </div>
-            <div class="badge"> · fabric · </div>
+        <div class="badge">· fabric ·</div>
         <div class="version-tag">v1.19.4-fabric</div>
     </div>
 
     <div class="progress-area">
         <div class="progress-label">
-            <span>PROGRESS BAR</span>
+            <span>PROGRESS</span>
             <span id="progressPercent">0%</span>
         </div>
         <div class="progress-bar-container">
@@ -367,8 +330,8 @@
 
     <div class="log-section">
         <div class="log-header">
-            <span>⎯ TERMINÁL ⎯</span>
-            <button class="clear-log" id="clearLogBtn">⌧ törlés</button>
+            <span>⎯ TERMINAL ⎯</span>
+            <button class="clear-log" id="clearLogBtn">⌧ clear</button>
         </div>
         <div class="log-box" id="logBox">
         </div>
@@ -376,22 +339,22 @@
 
     <div class="controls">
         <div class="input-field">
-            <label>⌨️ név</label>
+            <label>⌨️ username</label>
             <input type="text" id="username" spellcheck="false" autocomplete="off">
         </div>
         <div class="input-field">
-            <label>🧠 memória (pl 2G / 4G)</label>
+            <label>🧠 memory (2G / 4G)</label>
             <input type="text" id="memory" value="4G" spellcheck="false" autocomplete="off">
         </div>
     </div>
 
     <div class="action">
-        <button class="launch-btn" id="launchBtn">⏣ INDÍTÁS ⏣</button>
+        <button class="launch-btn" id="launchBtn">⏣ LAUNCH ⏣</button>
     </div>
 
     <div class="status-area">
         <span class="led" id="statusLed"></span>
-        <span id="statusText">● kész ●</span>
+        <span id="statusText">● ready ●</span>
     </div>
 </div>
 
@@ -410,7 +373,6 @@
         let isLaunching = false;
         let fakeSequenceTimer = null;
         let currentProgress = 0;
-        let launchStartTime = null;
 
         // ----- local storage -----
         function loadStoredSettings() {
@@ -430,7 +392,7 @@
             line.className = 'log-line';
             if (type === 'error') line.classList.add('log-error');
             else if (type === 'success') line.classList.add('log-success');
-            else if (type === 'info') line.classList.add('log-info');
+            else line.classList.add('log-info');
             
             const timestamp = new Date().toLocaleTimeString('hu-HU', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
             line.textContent = `[${timestamp}] ${message}`;
@@ -441,8 +403,8 @@
 
         function clearLog() {
             while(logBox.firstChild) logBox.removeChild(logBox.firstChild);
-            addLog('terminál törölve', 'info');
-            addLog('sufni launcher újraindításra kész', 'info');
+            addLog('terminal cleared', 'info');
+            addLog('sufni launcher ready', 'info');
         }
 
         function setProgress(percent) {
@@ -451,12 +413,14 @@
             progressFill.style.width = p + '%';
             progressPercentSpan.innerText = p + '%';
             if (p === 100) {
-                statusTextSpan.innerText = '✓ kész ✓';
+                statusTextSpan.innerText = '✓ running ✓';
+                statusLed.classList.add('active');
+            } else if (p > 0 && p < 100) {
+                statusTextSpan.innerText = `⧗ ${p}%`;
                 statusLed.classList.add('active');
             } else {
-                statusTextSpan.innerText = `⧗ folyamat: ${p}%`;
-                if(p > 0 && p < 100) statusLed.classList.add('active');
-                else if(p === 0) statusLed.classList.remove('active');
+                statusTextSpan.innerText = '● ready ●';
+                statusLed.classList.remove('active');
             }
         }
 
@@ -464,20 +428,20 @@
             setProgress(0);
         }
 
-        // ----- szimuláció (offline / fallback) -----
+        // ----- szimuláció (fallback) - nincs időtúllépés ellenőrzés -----
         function simulateLaunch(username, memory) {
             if (fakeSequenceTimer) clearTimeout(fakeSequenceTimer);
-            addLog(`⛏ indítás kérés: ${username} | ${memory} RAM`, 'info');
+            addLog(`launch request: ${username} | ${memory} RAM`, 'info');
             setProgress(5);
             
             const steps = [
-                { progress: 12, msg: '⎯ felhasználói profil ellenőrzése ...', delay: 380 },
-                { progress: 25, msg: '⎯ könyvtárak feloldása (libraries)', delay: 420 },
-                { progress: 40, msg: `⎯ memória foglalás: ${memory}`, delay: 300 },
-                { progress: 55, msg: '⎯ natív modulok betöltése (fabric)', delay: 450 },
-                { progress: 70, msg: '⎯ játékösszetevők integrálása', delay: 400 },
-                { progress: 85, msg: '⎯ indítási hookok aktiválása', delay: 380 },
-                { progress: 98, msg: '⎯ render előkészítés', delay: 350 }
+                { progress: 12, msg: 'checking user profile ...', delay: 350 },
+                { progress: 25, msg: 'loading libraries', delay: 400 },
+                { progress: 40, msg: `allocating memory: ${memory}`, delay: 300 },
+                { progress: 55, msg: 'initializing native modules (fabric)', delay: 420 },
+                { progress: 70, msg: 'integrating game assets', delay: 380 },
+                { progress: 85, msg: 'activating launch hooks', delay: 350 },
+                { progress: 98, msg: 'render prep', delay: 300 }
             ];
             
             let stepIndex = 0;
@@ -485,9 +449,9 @@
                 if (!isLaunching) return;
                 if (stepIndex >= steps.length) {
                     setProgress(100);
-                    addLog(`✔️ SUFNI elindult (${username} / ${memory})`, 'success');
-                    addLog(`🌌  műhely mód: játék fut a háttérben`, 'info');
-                    statusTextSpan.innerText = '✔️ fut ✔️';
+                    addLog(`✔️ SUFNI launched (${username} / ${memory})`, 'success');
+                    addLog(`game session active`, 'info');
+                    statusTextSpan.innerText = '✔️ running ✔️';
                     statusLed.classList.add('active');
                     isLaunching = false;
                     launchBtn.disabled = false;
@@ -502,7 +466,7 @@
             runStep();
         }
 
-        // ----- webview2 kommunikáció -----
+        // ----- webview2 kommunikáció (nincs timeout figyelés) -----
         function setupWebViewListener() {
             if (window.chrome?.webview) {
                 window.chrome.webview.addEventListener('message', (event) => {
@@ -527,45 +491,44 @@
                         }
                         if (data.type === 'done' || (data.progress && data.progress >= 100)) {
                             setProgress(100);
-                            addLog(`✔️ Launcher sikeres (backend)`, 'success');
+                            addLog(`launcher success (backend)`, 'success');
                             isLaunching = false;
                             launchBtn.disabled = false;
                             statusLed.classList.add('active');
-                            statusTextSpan.innerText = '✔️ fut ✔️';
+                            statusTextSpan.innerText = '✔️ running ✔️';
                             if (fakeSequenceTimer) clearTimeout(fakeSequenceTimer);
                         }
                     } catch(e) {
-                        addLog(`üzenet feldolgozás hiba: ${raw}`, 'error');
+                        addLog(`message parse error: ${raw}`, 'error');
                     }
                 });
             }
         }
 
-        // ----- indítás fő függvény -----
+        // ----- indítás fő függvény - nincs timeout, nincs extra ellenőrzés -----
         function startLaunch() {
             if (isLaunching) {
-                addLog('Már fut egy indítás, várj!', 'error');
+                addLog('launch already in progress', 'error');
                 return;
             }
             const username = usernameInput.value.trim();
             let memory = memoryInput.value.trim().toUpperCase();
             if (!username) {
-                addLog('❌ Név megadása kötelező', 'error');
+                addLog('❌ username required', 'error');
                 return;
             }
             if (!memory.match(/^\d+G$/)) {
-                addLog('❌ Memória formátuma: szám + G (pl 2G, 4G)', 'error');
+                addLog('❌ memory format: number + G (2G, 4G)', 'error');
                 return;
             }
             saveSettings();
             if (fakeSequenceTimer) clearTimeout(fakeSequenceTimer);
             resetProgress();
-            addLog(`🚀 INDÍTÁS: ${username} | memória: ${memory}`, 'info');
+            addLog(`🚀 LAUNCH: ${username} | mem: ${memory}`, 'info');
             isLaunching = true;
             launchBtn.disabled = true;
             statusLed.classList.remove('active');
-            statusTextSpan.innerText = '⏳ indítás folyamatban';
-            launchStartTime = Date.now();
+            statusTextSpan.innerText = '⏳ launching';
             
             const hasWebView = !!(window.chrome && window.chrome.webview);
             if (hasWebView) {
@@ -575,110 +538,28 @@
                     memory: memory
                 };
                 window.chrome.webview.postMessage(JSON.stringify(message));
-                // timeout 7 sec -> fallback ha nem jön válasz
-                let fallbackTimer = setTimeout(() => {
-                    if (isLaunching === true && currentProgress === 0) {
-                        addLog('⚠️ WebView2 nem válaszol – átváltás szimulációs módra', 'error');
-                        simulateLaunch(username, memory);
-                        clearTimeout(fallbackTimer);
-                    }
-                }, 7000);
-                const interval = setInterval(() => {
-                    if (!isLaunching) {
-                        clearInterval(interval);
-                        clearTimeout(fallbackTimer);
-                    }
-                }, 300);
+                // NINCS timeout / fallback timer - tiszta, csak backend válaszra vár
+                // (ha nem jön válasz, a felhasználó újrapróbálkozhat, de nem állítunk be automatikus időtúllépést)
             } else {
-                addLog('ℹ️ WebView2 nem elérhető – DEMO mód (szimuláció)', 'info');
+                addLog('ℹ️ WebView2 not available - DEMO mode (simulation)', 'info');
                 simulateLaunch(username, memory);
             }
         }
 
-        // ----- vészhelyzeti feloldás -----
+        // ----- force unlock manual -----
         function forceUnlock() {
             if (isLaunching) {
                 if (fakeSequenceTimer) clearTimeout(fakeSequenceTimer);
                 isLaunching = false;
                 launchBtn.disabled = false;
-                addLog('⛔ folyamat megszakítva (manuális)', 'error');
+                addLog('⛔ launch aborted (manual)', 'error');
                 setProgress(0);
-                statusTextSpan.innerText = '● megszakítva ●';
+                statusTextSpan.innerText = '● aborted ●';
                 statusLed.classList.remove('active');
             }
         }
 
-        // ----- időtúllépés ellenőrzés -----
-        setInterval(() => {
-            if (isLaunching && launchStartTime && (Date.now() - launchStartTime > 28000)) {
-                addLog('⚠️ időtúllépés, indítás megszakítva', 'error');
-                forceUnlock();
-                setProgress(0);
-            }
-        }, 1000);
-
-        // ----- részecskék (purple dust, nem AI slop) -----
-        const canvas = document.getElementById('dustCanvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-        const PARTICLE_COUNT = 120;
-
-        function resizeCanvas() {
-            canvas.width = 800;
-            canvas.height = 600;
-        }
-        
-        class DustParticle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 2 + 0.3;
-                this.speedX = (Math.random() - 0.5) * 0.1;
-                this.speedY = (Math.random() - 0.5) * 0.07;
-                const purpleVal = 140 + Math.random() * 80;
-                this.color = `rgba(${purpleVal + 40}, ${purpleVal - 30}, 240, ${Math.random() * 0.4 + 0.1})`;
-            }
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                if (this.x < -15) this.x = canvas.width + 10;
-                if (this.x > canvas.width + 15) this.x = -15;
-                if (this.y < -15) this.y = canvas.height + 10;
-                if (this.y > canvas.height + 15) this.y = -15;
-            }
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-            }
-        }
-
-        function initParticles() {
-            particles = [];
-            for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(new DustParticle());
-        }
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let p of particles) {
-                p.update();
-                p.draw();
-            }
-            requestAnimationFrame(animate);
-        }
-
-        resizeCanvas();
-        initParticles();
-        animate();
-        window.addEventListener('resize', () => {
-            if (canvas.width !== 800 || canvas.height !== 600) {
-                resizeCanvas();
-                initParticles();
-            }
-        });
-
-        // ----- események -----
+        // események
         launchBtn.addEventListener('click', startLaunch);
         document.getElementById('clearLogBtn').addEventListener('click', clearLog);
         
@@ -694,6 +575,9 @@
         loadStoredSettings();
         setupWebViewListener();
         statusLed.classList.remove('active');
+        
+        // nincs időtúllépés ellenőrző setInterval, nincs auto timeout
+        // minden felesleges effekt / háttér / részecske / crt eltávolítva
     })();
 </script>
 </body>
